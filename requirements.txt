@@ -1,0 +1,5 @@
+groq>=0.30
+scikit-learn>=1.4
+pypdf>=4.0
+streamlit>=1.50
+pytest>=8.0
