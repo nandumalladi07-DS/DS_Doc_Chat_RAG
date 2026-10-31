@@ -12,13 +12,16 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+import groq
 from groq import Groq
 from pypdf import PdfReader
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 SUPPORTED_EXTENSIONS = (".pdf", ".txt", ".md")
-MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
+# Used in this order if MODEL is retired by Groq (they deprecate models every few months).
+FALLBACK_MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
 
 SYSTEM_PROMPT = """You answer questions using only the numbered source passages provided by the user.
 
@@ -116,20 +119,41 @@ def build_user_message(question: str, results: list[tuple[Chunk, float]]) -> str
     return f"<sources>\n{sources}\n</sources>\n\nQuestion: {question}"
 
 
+def _complete(client: Groq, model: str, messages: list[dict]):
+    extra = {"reasoning_effort": "low"} if model.startswith("openai/gpt-oss") else {}
+    return client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=0.1,             # low = stick closely to the sources
+        max_completion_tokens=2048,  # room for the model's reasoning + the answer
+        **extra,
+    )
+
+
+def _replacement_model(client: Groq, failed: str) -> str | None:
+    """First fallback model that this Groq account can currently use."""
+    available = {m.id for m in client.models.list().data}
+    return next((m for m in FALLBACK_MODELS if m != failed and m in available), None)
+
+
 def ask_llm(question: str, results: list[tuple[Chunk, float]], client: Groq | None = None) -> str:
     """Ask the Groq-hosted LLM to answer from the retrieved chunks. Returns the answer text."""
+    global MODEL
     if not results:
         return "I couldn't find anything related to that in the documents."
     client = client or Groq()  # reads GROQ_API_KEY from the environment
-    response = client.chat.completions.create(
-        model=MODEL,
-        temperature=0.1,  # low = stick closely to the sources
-        max_tokens=1024,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": build_user_message(question, results)},
-        ],
-    )
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": build_user_message(question, results)},
+    ]
+    try:
+        response = _complete(client, MODEL, messages)
+    except groq.NotFoundError:  # model retired or not available on this account
+        replacement = _replacement_model(client, MODEL)
+        if replacement is None:
+            raise
+        MODEL = replacement
+        response = _complete(client, MODEL, messages)
     return (response.choices[0].message.content or "").strip()
 
 

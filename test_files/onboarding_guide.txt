@@ -1,0 +1,22 @@
+Nimbus Labs - New Joiner Onboarding Guide
+
+Your first day
+Please arrive at 9:30 AM at the Bengaluru office reception (4th floor, Prestige Tech Park). Bring a government photo ID and your offer letter. The HR team will meet you and take you through a 1-hour induction.
+
+Laptop and accounts
+The IT team hands over your laptop on day 1, already set up with your email, Slack and VPN. Set up multi-factor authentication before you leave on the first day.
+
+Your buddy
+Every new joiner gets an onboarding buddy from their team for the first 30 days. Your buddy helps with tools, team rituals and anything you are unsure about.
+
+ID card and access
+Your permanent ID card is ready within 3 working days. Until then, collect a temporary visitor badge from reception every morning.
+
+Probation
+The probation period is 6 months. Your manager will have check-in conversations with you at 1 month, 3 months and 6 months.
+
+Salary and payroll
+Salary is paid on the last working day of each month. Bank details and tax declarations must be submitted in the HR portal before the 25th to be included in that month's payroll.
+
+Useful Slack channels
+#general for company news, #it-help for laptop or access problems, #hr-questions for leave and payroll, and #new-joiners to meet others who joined recently.

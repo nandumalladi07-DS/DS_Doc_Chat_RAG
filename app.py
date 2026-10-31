@@ -6,6 +6,7 @@ from pathlib import Path
 import groq
 import streamlit as st
 
+import rag
 from rag import DocumentQA, read_file
 
 SAMPLE_DOCS = Path(__file__).parent / "sample_docs"
@@ -50,6 +51,7 @@ with st.sidebar:
     if use_samples:
         files += [(p.name, p.read_bytes()) for p in sorted(SAMPLE_DOCS.iterdir())]
 
+    st.caption(f"Model: `{rag.MODEL}` (on Groq)")
     if st.button("Clear chat"):
         st.session_state.messages = []
 
