@@ -18,12 +18,25 @@ def build_index(files: tuple[tuple[str, bytes], ...]) -> DocumentQA:
     return DocumentQA([(name, read_file(name, data)) for name, data in files])
 
 
+def configured_key() -> str:
+    """Key set by the host: an environment variable, or a Streamlit Cloud secret."""
+    if os.environ.get("GROQ_API_KEY"):
+        return os.environ["GROQ_API_KEY"]
+    try:
+        return st.secrets.get("GROQ_API_KEY", "")
+    except Exception:  # no secrets file configured
+        return ""
+
+
 with st.sidebar:
     st.header("1. API key")
-    api_key = st.text_input("Groq API key", type="password",
-                            placeholder="gsk_...  (or set GROQ_API_KEY)")
-    api_key = api_key or os.environ.get("GROQ_API_KEY", "")
-    if not os.environ.get("GROQ_API_KEY"):
+    host_key = configured_key()
+    if host_key:
+        st.success("API key is configured. Just start asking.")
+        api_key = host_key
+    else:
+        api_key = st.text_input("Groq API key", type="password",
+                                placeholder="gsk_...  (or set GROQ_API_KEY)")
         st.caption("Free key: https://console.groq.com/keys")
     if not api_key:
         st.caption("Without a key you still see the matching passages, just no AI answer.")

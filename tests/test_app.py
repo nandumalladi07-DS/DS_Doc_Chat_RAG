@@ -25,3 +25,12 @@ def test_question_without_key_shows_passages():
     assert len(at.chat_message) == 2  # user + assistant
     assert "Add a Groq API key" in at.chat_message[1].markdown[0].value
     assert "leave_policy.md" in at.chat_message[1].expander[0].markdown[0].value
+
+
+def test_key_from_streamlit_secrets_is_used():
+    at = AppTest.from_file(APP, default_timeout=60)
+    at.secrets["GROQ_API_KEY"] = "gsk_test"
+    at.run()
+    assert not at.exception
+    assert any("API key is configured" in s.value for s in at.success)
+    assert len(at.text_input) == 0  # no key box needed

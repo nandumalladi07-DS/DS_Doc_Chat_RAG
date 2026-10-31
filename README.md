@@ -35,7 +35,7 @@ Design choices worth mentioning in an interview:
 - **No API call when nothing relevant is found.** This saves cost and stops made-up answers.
 - **Works without an API key.** You still see the retrieved passages, which makes it easy to debug retrieval on its own.
 - **Friendly errors.** A bad key, the free-tier rate limit and network problems each get a clear message instead of a crash.
-- **Fully offline tests.** The LLM is replaced by a fake client, so the 18 tests need no key and cost nothing.
+- **Fully offline tests.** The LLM is replaced by a fake client, so the 19 tests need no key and cost nothing.
 
 ## Project structure
 
@@ -49,7 +49,7 @@ DS_Doc_Chat_RAG/
 │   ├── test_rag.py   # chunking, retrieval accuracy, prompt building, fake-LLM tests
 │   └── test_app.py   # chat UI smoke tests (no browser, no key)
 ├── requirements.txt
-└── Dockerfile        # for Hugging Face Spaces / Docker
+└── Dockerfile        # to run anywhere with Docker
 ```
 
 ## How to run (step by step)
@@ -85,7 +85,7 @@ pip install -r requirements.txt
 ```bash
 python -m pytest -v
 ```
-Expected: `18 passed`.
+Expected: `19 passed`.
 
 ### 4. Try retrieval without a key
 
@@ -132,17 +132,19 @@ Open http://localhost:8501, paste your key in the sidebar (or set it as in step 
 | `GROQ_API_KEY` | — | your Groq API key |
 | `GROQ_MODEL` | `llama-3.3-70b-versatile` | any chat model from https://console.groq.com/docs/models, e.g. `openai/gpt-oss-120b` or `llama-3.1-8b-instant` |
 
-## Deploy free on Hugging Face Spaces
+## Deploy free on Streamlit Community Cloud
 
-1. At https://huggingface.co go to **New → Space**, choose SDK **Docker** with the **Blank** template, then click **Create Space**.
-2. In the Space go to **Settings → Variables and secrets → New secret**: name `GROQ_API_KEY`, value your `gsk_...` key. Use **secret**, not variable, so the key stays hidden. Visitors can then chat without a key. They share your free-tier rate limit, but nobody can see the key.
-3. Push this repo to the Space:
-   ```bash
-   git remote add space https://huggingface.co/spaces/<hf-username>/<space-name>
-   git push space main
+1. Sign in at https://share.streamlit.io with your GitHub account.
+2. Click **Create app → Deploy a public app from GitHub**.
+3. Fill in **Repository** `<your-username>/DS_Doc_Chat_RAG`, **Branch** `main` and **Main file path** `app.py`.
+4. Under **Advanced settings → Secrets**, paste:
+   ```toml
+   GROQ_API_KEY = "gsk_your_key_here"
    ```
-   Use a Hugging Face **access token** with *write* permission as the password.
-4. After a 2–3 minute build, the app is live at `https://huggingface.co/spaces/<hf-username>/<space-name>`.
+   Visitors can then chat without entering a key, and the key is never shown. Skip this if visitors should paste their own key in the sidebar.
+5. Click **Deploy**.
+
+After a few minutes the app is live at a public `https://<name>.streamlit.app` link. Apps with no visitors for 12 hours go to sleep; the next visitor wakes them with one click.
 
 ## Run with Docker (optional)
 
